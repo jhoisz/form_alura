@@ -1,7 +1,7 @@
 import 'package:extended_masked_text/extended_masked_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:form_alura/address.dart';
+import 'package:form_alura/models/address.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class FormPage extends StatefulWidget {
@@ -13,8 +13,6 @@ class FormPage extends StatefulWidget {
 
 class _FormPageState extends State<FormPage> {
   final _formKey = GlobalKey<FormState>();
-
-  Address? address;
 
   final _nameController = TextEditingController();
   final _phoneController = MaskedTextController(mask: '(000) 00000-0000');
@@ -42,12 +40,27 @@ class _FormPageState extends State<FormPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Cadastro\nde endereço',
-              style: GoogleFonts.poppins(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Cadastro\nde endereço',
+                    style: GoogleFonts.poppins(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    resetForm();
+                  },
+                  icon: const Icon(
+                    Icons.restart_alt,
+                    color: Color(0xFF0123FF),
+                  ),
+                ),
+              ],
             ),
             Expanded(
               child: ListView(
@@ -153,9 +166,7 @@ class _FormPageState extends State<FormPage> {
                         ),
                         primary: const Color(0xFF0123FF),
                       ),
-                      onPressed: () {
-                        validateForm();
-                      },
+                      onPressed: validateForm,
                       child: Text(
                         'Salvar',
                         style: GoogleFonts.poppins(
@@ -174,8 +185,21 @@ class _FormPageState extends State<FormPage> {
     );
   }
 
+  void resetForm() {
+    _formKey.currentState?.reset();
+    _nameController.clear();
+    _phoneController.clear();
+    _cepController.clear();
+    _numberController.clear();
+    _streetController.clear();
+    _neighborhoodController.clear();
+    _complementController.clear();
+    _cityController.clear();
+    _stateController.clear();
+  }
+
   Widget buildTextField(
-    String name,
+    String label,
     TextInputType type,
     BuildContext context,
     TextEditingController controller, {
@@ -187,7 +211,7 @@ class _FormPageState extends State<FormPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          name,
+          label,
           style: GoogleFonts.poppins(fontSize: 16),
         ),
         TextFormField(
@@ -195,7 +219,7 @@ class _FormPageState extends State<FormPage> {
           validator: validator ??
               (value) {
                 return (value?.isEmpty ?? true)
-                    ? 'Campo $name não pode ficar vazio'
+                    ? '$label não pode ficar vazio'
                     : null;
               },
           keyboardType: type,
@@ -231,7 +255,7 @@ class _FormPageState extends State<FormPage> {
   void validateForm() {
     final FormState? form = _formKey.currentState;
     if (form?.validate() ?? false) {
-      address = Address(
+      Address address = Address(
         name: _nameController.text,
         phone: _phoneController.text,
         cep: _cepController.text,
@@ -242,9 +266,46 @@ class _FormPageState extends State<FormPage> {
         state: _stateController.text,
         city: _cityController.text,
       );
-      debugPrint(address?.getAddress().toString());
+      debugPrint(address.toJson().toString());
+      buildModal(context, address);
+      resetForm();
     } else {
       debugPrint('Formulário inválido');
     }
+  }
+
+  void buildModal(BuildContext context, Address address) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            'Endereço salvo!',
+            style: GoogleFonts.poppins(
+              fontSize: 18.0,
+              // color: const Color(0xFF56B36D),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            address.toString(),
+            style: GoogleFonts.poppins(
+              fontSize: 16.0,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, 'OK');
+              },
+              child: const Icon(
+                Icons.done,
+                color: Color(0xFF1D3DF2),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
