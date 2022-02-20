@@ -80,6 +80,12 @@ class _FormPageState extends State<FormPage> {
                           TextInputType.number,
                           context,
                           _phoneController,
+                          validator: (text) {
+                            if (_phoneController.unmasked.length < 12) {
+                              return 'Mínimo de 12 caracteres';
+                            }
+                            return null;
+                          },
                         ),
                         Row(
                           children: [
@@ -89,6 +95,12 @@ class _FormPageState extends State<FormPage> {
                                 TextInputType.number,
                                 context,
                                 _cepController,
+                                validator: (text) {
+                                  if (_cepController.unmasked.length < 8) {
+                                    return 'Mínimo de 8 caracteres';
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
                             const SizedBox(width: 15.0),
